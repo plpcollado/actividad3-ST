@@ -2,10 +2,6 @@
 
 Exercises
 
-1. Change the board.
-2. Change the number of ghosts.
-3. Change where pacman starts.
-4. Make the ghosts faster/slower.
 5. Make the ghosts smarter.
 """
 
@@ -106,6 +102,24 @@ def world():
                 path.goto(x + 10, y + 10)
                 path.dot(2, 'white')
 
+def same_path(ghost, pacman):
+    """Check if ghost and pacman are on the same continuous path."""
+    if ghost.x == pacman.x:  # Same column
+        step = 20 if pacman.y > ghost.y else -20
+        for y in range(int(ghost.y), int(pacman.y), step):
+            if tiles[offset(vector(ghost.x, y))] == 0:  # If there's a wall
+                return False
+        return True
+
+    elif ghost.y == pacman.y:  # Same row
+        step = 20 if pacman.x > ghost.x else -20
+        for x in range(int(ghost.x), int(pacman.x), step):
+            if tiles[offset(vector(x, ghost.y))] == 0:  # If there's a wall
+                return False
+        return True
+
+    return False
+
 
 def move():
     """Move pacman and all ghosts."""
@@ -131,7 +145,16 @@ def move():
     dot(20, 'yellow')
 
     for point, course in ghosts:
-        if valid(point + course):
+        if same_path(point, pacman):  # If Pac-Man is on the same path
+            if pacman.x > point.x:
+                course.x, course.y = 10, 0
+            elif pacman.x < point.x:
+                course.x, course.y = -10, 0
+            elif pacman.y > point.y:
+                course.x, course.y = 0, 10
+            elif pacman.y < point.y:
+                course.x, course.y = 0, -10
+        elif valid(point + course):
             point.move(course)
         else:
             options = [
